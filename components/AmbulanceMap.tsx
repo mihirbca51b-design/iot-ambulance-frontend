@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, Marker, Popup, TileLayer, Tooltip, useMap } from "react-leaflet";
 import type { LatLngBoundsExpression } from "leaflet";
 import L from "leaflet";
 
@@ -62,6 +62,15 @@ export default function AmbulanceMap({ ambulances }: AmbulanceMapProps) {
           position={[ambulance.latitude, ambulance.longitude]}
           icon={markerIcon(ambulance.status)}
         >
+          <Tooltip
+            permanent
+            direction="top"
+            offset={[0, -12]}
+            opacity={1}
+            className="ambulance-label"
+          >
+            {ambulance.ambulance_id}
+          </Tooltip>
           <Popup>
             <strong>{ambulance.ambulance_id}</strong>
             <br />
