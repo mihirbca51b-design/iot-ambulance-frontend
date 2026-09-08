@@ -9,44 +9,53 @@ import type { AmbulanceReading } from "@/types";
 
 interface AmbulanceMapProps {
   ambulances: AmbulanceReading[];
+  selectedAmbulanceId: string | null;
+  focusVersion: number;
+  onAmbulanceSelect: (ambulanceId: string) => void;
 }
 
-function FitNewAmbulances({ ambulances }: AmbulanceMapProps) {
+function UpdateMapView({ ambulances, selectedAmbulanceId, focusVersion }: Omit<AmbulanceMapProps, "onAmbulanceSelect">) {
   const map = useMap();
   const seenIds = useRef(new Set<string>());
 
   useEffect(() => {
+    const selected = ambulances.find((ambulance) => ambulance.ambulance_id === selectedAmbulanceId);
+    if (selected) {
+      map.flyTo([selected.latitude, selected.longitude], 15, { duration: 0.6 });
+      return;
+    }
+
     const hasNewAmbulance = ambulances.some(
       (ambulance) => !seenIds.current.has(ambulance.ambulance_id),
     );
 
     ambulances.forEach((ambulance) => seenIds.current.add(ambulance.ambulance_id));
 
-    if (hasNewAmbulance && ambulances.length > 0) {
+    if ((hasNewAmbulance || focusVersion > 0) && ambulances.length > 0) {
       const bounds: LatLngBoundsExpression = ambulances.map((ambulance) => [
         ambulance.latitude,
         ambulance.longitude,
       ]);
       map.fitBounds(bounds, { padding: [32, 32], maxZoom: 14 });
     }
-  }, [ambulances, map]);
+  }, [ambulances, focusVersion, map, selectedAmbulanceId]);
 
   return null;
 }
 
-function markerIcon(status: string) {
+function markerIcon(status: string, isSelected: boolean) {
   const color = status.toLowerCase() === "emergency" ? "#dc2626" : "#2563eb";
   // A divIcon avoids Leaflet's default PNG path issue with Next.js/Webpack.
   return L.divIcon({
     className: "ambulance-marker",
-    html: `<span style="display:block;width:20px;height:20px;border:3px solid white;border-radius:50%;background:${color};box-shadow:0 2px 6px rgba(15,23,42,.35)"></span>`,
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
+    html: `<span style="display:block;width:${isSelected ? 28 : 20}px;height:${isSelected ? 28 : 20}px;border:${isSelected ? 4 : 3}px solid white;border-radius:50%;background:${color};box-shadow:0 2px 6px rgba(15,23,42,.35),${isSelected ? "0 0 0 3px rgba(37,130,216,.35)" : "none"}"></span>`,
+    iconSize: [isSelected ? 28 : 20, isSelected ? 28 : 20],
+    iconAnchor: [isSelected ? 14 : 10, isSelected ? 14 : 10],
     popupAnchor: [0, -10],
   });
 }
 
-export default function AmbulanceMap({ ambulances }: AmbulanceMapProps) {
+export default function AmbulanceMap({ ambulances, selectedAmbulanceId, focusVersion, onAmbulanceSelect }: AmbulanceMapProps) {
   const defaultCenter: [number, number] = [20, 0];
 
   return (
@@ -55,12 +64,13 @@ export default function AmbulanceMap({ ambulances }: AmbulanceMapProps) {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <FitNewAmbulances ambulances={ambulances} />
+      <UpdateMapView ambulances={ambulances} selectedAmbulanceId={selectedAmbulanceId} focusVersion={focusVersion} />
       {ambulances.map((ambulance) => (
         <Marker
           key={ambulance.ambulance_id}
           position={[ambulance.latitude, ambulance.longitude]}
-          icon={markerIcon(ambulance.status)}
+          icon={markerIcon(ambulance.status, ambulance.ambulance_id === selectedAmbulanceId)}
+          eventHandlers={{ click: () => onAmbulanceSelect(ambulance.ambulance_id) }}
         >
           <Tooltip
             permanent
