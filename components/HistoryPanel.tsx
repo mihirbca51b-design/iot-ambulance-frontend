@@ -2,12 +2,17 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-
+import { IconAmbulance, IconClose } from "@/components/Icons";
 import type { AmbulanceReading } from "@/types";
 
 const HistoryRouteMap = dynamic(() => import("@/components/HistoryRouteMap"), {
   ssr: false,
-  loading: () => <div className="h-48 animate-pulse rounded-xl bg-slate-100" />,
+  loading: () => (
+    <div className="map-area-loading" style={{ height: "192px" }}>
+      <span className="loading-spinner" />
+      <p>Loading route…</p>
+    </div>
+  ),
 });
 
 interface HistoryPanelProps {
@@ -51,65 +56,73 @@ export default function HistoryPanel({ ambulance, onClose }: HistoryPanelProps) 
 
   return (
     <div
-      className="fixed inset-0 z-[1000] flex items-end justify-center bg-slate-950/40 p-0 sm:items-center sm:p-6"
+      className="history-overlay"
       role="dialog"
       aria-modal="true"
       aria-labelledby="history-title"
       onClick={onClose}
     >
-      <section
-        className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl bg-white p-5 shadow-2xl sm:rounded-3xl sm:p-7"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-coral">Recent activity</p>
-            <h2 id="history-title" className="mt-1 text-xl font-bold text-ink">
-              🚑 {ambulance.ambulance_id} history
-            </h2>
+      <section className="history-panel" onClick={(event) => event.stopPropagation()}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px" }}>
+          <div style={{ display: "flex", gap: "14px", alignItems: "flex-start" }}>
+            <div className="metric-icon">
+              <IconAmbulance className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="eyebrow">Recent activity</p>
+              <h2 id="history-title" style={{ margin: "4px 0 0", fontSize: "20px", fontWeight: 700 }}>
+                {ambulance.ambulance_id} history
+              </h2>
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full px-3 py-1 text-2xl leading-none text-slate-400 hover:bg-slate-100 hover:text-ink"
-            aria-label="Close history"
-          >
-            &times;
+          <button type="button" onClick={onClose} className="history-close" aria-label="Close history">
+            <IconClose className="h-4 w-4" />
           </button>
         </div>
 
         {isLoading ? (
-          <div className="py-16 text-center text-sm text-slate-500">Loading history...</div>
+          <div style={{ padding: "48px 0", textAlign: "center" }}>
+            <span className="loading-spinner" style={{ margin: "0 auto" }} />
+            <p style={{ marginTop: "14px", color: "#64748b", fontSize: "14px" }}>Loading history…</p>
+          </div>
         ) : error ? (
-          <div className="py-16 text-center text-sm text-red-600">{error}</div>
+          <div style={{ padding: "48px 0", textAlign: "center", color: "#dc2626", fontSize: "14px" }}>{error}</div>
         ) : readings.length < 2 ? (
-          <div className="py-16 text-center">
-            <p className="font-semibold text-ink">No history yet</p>
-            <p className="mt-1 text-sm text-slate-500">At least two readings are needed to show a route.</p>
+          <div className="empty-state" style={{ marginTop: "24px", padding: "40px 24px" }}>
+            <h3>No history yet</h3>
+            <p>At least two readings are needed to show a route on the map.</p>
           </div>
         ) : (
-          <div className="mt-6 space-y-5">
-            <div className="overflow-hidden rounded-xl border border-slate-200">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+          <div style={{ marginTop: "24px", display: "grid", gap: "18px" }}>
+            <div className="history-table-wrap">
+              <table className="history-table">
+                <thead>
                   <tr>
-                    <th className="px-4 py-3 font-semibold">Timestamp</th>
-                    <th className="px-4 py-3 font-semibold">People</th>
-                    <th className="px-4 py-3 font-semibold">Status</th>
+                    <th>Timestamp</th>
+                    <th>People</th>
+                    <th>Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody>
                   {readings.map((reading) => (
                     <tr key={reading.id}>
-                      <td className="px-4 py-3 text-slate-600">{new Date(reading.created_at).toLocaleString()}</td>
-                      <td className="px-4 py-3 font-medium text-ink">{reading.people}</td>
-                      <td className="px-4 py-3 text-slate-600">{reading.status}</td>
+                      <td style={{ color: "#64748b" }}>{new Date(reading.created_at).toLocaleString()}</td>
+                      <td style={{ fontWeight: 600 }}>{reading.people}</td>
+                      <td>
+                        <span
+                          className={
+                            reading.status.toLowerCase() === "emergency" ? "status-emergency" : "status-normal"
+                          }
+                        >
+                          {reading.status}
+                        </span>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <div className="overflow-hidden rounded-xl border border-slate-200">
+            <div className="history-table-wrap" style={{ overflow: "hidden" }}>
               <HistoryRouteMap readings={readings} />
             </div>
           </div>

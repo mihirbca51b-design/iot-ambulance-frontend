@@ -44,14 +44,19 @@ function UpdateMapView({ ambulances, selectedAmbulanceId, focusVersion }: Omit<A
 }
 
 function markerIcon(status: string, isSelected: boolean) {
-  const color = status.toLowerCase() === "emergency" ? "#dc2626" : "#2563eb";
+  const isEmergency = status.toLowerCase() === "emergency";
+  const color = isEmergency ? "#ef4444" : "#3b82f6";
+  const size = isSelected ? 36 : 24;
+  const ring = isSelected
+    ? `0 0 0 4px ${isEmergency ? "rgba(239,68,68,.25)" : "rgba(59,130,246,.25)"}`
+    : "none";
   // A divIcon avoids Leaflet's default PNG path issue with Next.js/Webpack.
   return L.divIcon({
     className: "ambulance-marker",
-    html: `<span style="display:block;width:${isSelected ? 28 : 20}px;height:${isSelected ? 28 : 20}px;border:${isSelected ? 4 : 3}px solid white;border-radius:50%;background:${color};box-shadow:0 2px 6px rgba(15,23,42,.35),${isSelected ? "0 0 0 3px rgba(37,130,216,.35)" : "none"}"></span>`,
-    iconSize: [isSelected ? 28 : 20, isSelected ? 28 : 20],
-    iconAnchor: [isSelected ? 14 : 10, isSelected ? 14 : 10],
-    popupAnchor: [0, -10],
+    html: `<span style="display:block;width:${size}px;height:${size}px;border:3px solid white;border-radius:50%;background:${color};box-shadow:0 4px 12px rgba(15,23,42,.3),${ring}"></span>`,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    popupAnchor: [0, -12],
   });
 }
 

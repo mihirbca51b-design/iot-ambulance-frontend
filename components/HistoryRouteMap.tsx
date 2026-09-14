@@ -34,7 +34,7 @@ export default function HistoryRouteMap({ readings }: HistoryRouteMapProps) {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <Polyline positions={points} pathOptions={{ color: "#ef6b5d", weight: 4 }} />
+      <Polyline positions={points} pathOptions={{ color: "#3b82f6", weight: 4, opacity: 0.85 }} />
       <FitRoute points={points} />
     </MapContainer>
   );

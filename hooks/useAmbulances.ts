@@ -12,6 +12,8 @@ const WS_URL = process.env.NEXT_PUBLIC_WS_URL;
 export function useAmbulances() {
   const [ambulances, setAmbulances] = useState<AmbulanceReading[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("connecting");
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -24,9 +26,17 @@ export function useAmbulances() {
         const response = await fetch(`${API_URL}/api/ambulances`);
         if (!response.ok) throw new Error(`Unable to load ambulances (${response.status})`);
         const readings: AmbulanceReading[] = await response.json();
-        if (isMounted) setAmbulances(readings);
+        if (isMounted) {
+          setAmbulances(readings);
+          setLoadError(null);
+        }
       } catch (error) {
         console.error("Failed to fetch ambulances:", error);
+        if (isMounted) {
+          setLoadError(error instanceof Error ? error.message : "Unable to load ambulance data");
+        }
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     };
 
@@ -83,5 +93,5 @@ export function useAmbulances() {
     };
   }, []);
 
-  return { ambulances, connectionStatus };
+  return { ambulances, connectionStatus, isLoading, loadError };
 }
