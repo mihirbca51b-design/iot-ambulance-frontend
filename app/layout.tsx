@@ -11,9 +11,6 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Ambulance Monitoring Dashboard",
   description: "Live ambulance location and occupancy monitoring.",
-  icons: {
-    icon: "/ambulance-tab-icon.svg",
-  },
 };
 
 export default function RootLayout({
