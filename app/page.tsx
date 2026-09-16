@@ -8,7 +8,6 @@ import {
   IconAlert,
   IconAmbulance,
   IconApi,
-  IconBattery,
   IconBell,
   IconChevronDown,
   IconChip,
@@ -93,7 +92,7 @@ function LocalClock() {
 }
 
 export default function Home() {
-  const { ambulances, connectionStatus, isLoading, loadError } = useAmbulances();
+  const { ambulances, connectionStatus, isLoading } = useAmbulances();
   const [view, setView] = useState<View>("command");
   const [selectedAmbulanceId, setSelectedAmbulanceId] = useState<string | null>(null);
   const [historyAmbulance, setHistoryAmbulance] = useState<AmbulanceReading | null>(null);
@@ -299,7 +298,6 @@ export default function Home() {
                 tone={emergency ? "emergency" : "default"}
               />
               <div className="mini">
-                <Metric icon={<IconBattery className="h-5 w-5" />} label="Battery" value="—%" detail="Not reported" />
                 <Metric
                   icon={<IconSignal className="h-5 w-5" />}
                   label="Signal"
@@ -518,18 +516,7 @@ export default function Home() {
         </header>
 
         <div className="content">
-          {isLoading ? (
-            <DashboardLoading />
-          ) : loadError && !ambulances.length ? (
-            <section className="load-error">
-              <p className="eyebrow">Connection issue</p>
-              <h2>Could not load ambulance data</h2>
-              <p>{loadError}</p>
-              <p className="load-error-hint">The dashboard will keep trying to connect in the background.</p>
-            </section>
-          ) : (
-            viewContent[view]
-          )}
+          {isLoading ? <DashboardLoading /> : viewContent[view]}
         </div>
       </section>
 
