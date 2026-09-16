@@ -210,7 +210,7 @@ export default function Home() {
         <IconAmbulance className="h-7 w-7" />
       </div>
       <h3>No ambulances connected</h3>
-      <p>Start your ESP32 device or send a test payload to see live telemetry appear on the map.</p>
+      <p>Start your ESP32 device to see live telemetry appear on the map.</p>
     </section>
   );
 
